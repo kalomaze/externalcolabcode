@@ -1,2 +1,2 @@
-# RVC Colab Code
-I'm just using this repository to edit my google colab in external functions for code maintainability reasons.
+# External Colab Code
+I'm just using this repository to edit my Google Colab in external functions for code maintainability reasons.
