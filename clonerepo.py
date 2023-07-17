@@ -3,6 +3,7 @@ import subprocess
 import shutil
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm.notebook import tqdm
+from pathlib import Path
 
 def clone_repository():
 
@@ -99,45 +100,40 @@ def clone_repository():
     # Define the repo path
     repo_path = '/content/Retrieval-based-Voice-Conversion-WebUI'
 
-    if not os.path.exists(repo_path):
-        # Clone the latest code from the Mangio621/Mangio-RVC-Fork repository
-        run_cmd("git clone https://github.com/Mangio621/Mangio-RVC-Fork.git")
-        os.chdir('/content/Mangio-RVC-Fork')
+    def copy_all_files_in_directory(src_dir, dest_dir):
+        # Iterate over all files in source directory
+        for item in Path(src_dir).glob('*'):
+            if item.is_file():
+                # Copy each file to destination directory
+                shutil.copy(item, dest_dir)
+            else:
+                # If it's a directory, make a new directory in the destination and copy the files recursively
+                new_dest = Path(dest_dir) / item.name
+                new_dest.mkdir(exist_ok=True)
+                copy_all_files_in_directory(str(item), str(new_dest))
+
+    def clone_and_copy_repo(repo_path):
+        # Temporary path to clone the repository
+        temp_repo_path = "/content/temp_Mangio-RVC-Fork"
+        # Clone the latest code from the Mangio621/Mangio-RVC-Fork repository to a temporary location
+        run_cmd(f"git clone https://github.com/Mangio621/Mangio-RVC-Fork.git {temp_repo_path}")
+        os.chdir(temp_repo_path)
         run_cmd("wget https://github.com/777gt/EasyGUI-RVC-Fork/raw/main/EasierGUI.py")
+
+        # Edit the file here, before copying
+        edit_file(f"{temp_repo_path}/infer-web.py")
+
+        # Copy all files from the cloned repository to the existing path
+        copy_all_files_in_directory(temp_repo_path, repo_path)
+
+        # Change working directory back to /content/
         os.chdir('/content/')
-        shutil.move('/content/Mangio-RVC-Fork', '/content/Retrieval-based-Voice-Conversion-WebUI')
-        edit_file("/content/Retrieval-based-Voice-Conversion-WebUI/infer-web.py")
-    else:
-        print(f"The repository already exists at {repo_path}. Checking for 'utils' folder.")
+        
+        # Remove the temporary cloned repository
+        shutil.rmtree(temp_repo_path)
 
-        utils_folder_path = os.path.join(repo_path, 'utils')
-        temp_folder_path = os.path.join(repo_path, 'temp_utils')
-
-        if os.path.exists(utils_folder_path):
-            print("Found 'utils' folder. Copying it to a temporary location.")
-
-            # Copy 'utils' folder to temporary location
-            shutil.copytree(utils_folder_path, temp_folder_path)
-
-            # Delete the original RVC folder
-            shutil.rmtree(repo_path)
-
-        print("Continuing cloning...")
-        # Clone the latest code from the Mangio621/Mangio-RVC-Fork repository
-        run_cmd("git clone https://github.com/Mangio621/Mangio-RVC-Fork.git")
-        os.chdir('/content/Mangio-RVC-Fork')
-        run_cmd("wget https://github.com/777gt/EasyGUI-RVC-Fork/raw/main/EasierGUI.py")
-        os.chdir('/content/')
-        shutil.move('/content/Mangio-RVC-Fork', '/content/Retrieval-based-Voice-Conversion-WebUI')
-        edit_file("/content/Retrieval-based-Voice-Conversion-WebUI/infer-web.py")
-
-        if os.path.exists(temp_folder_path):
-            print("Copying 'utils' folder back after cloning.")
-            # Copy 'utils' folder back after cloning
-            shutil.copytree(temp_folder_path, utils_folder_path)
-
-            # Delete temporary 'utils' folder
-            shutil.rmtree(temp_folder_path)
+    # Call the function
+    clone_and_copy_repo(repo_path)
 
     # Download the credentials file for RVC archive sheet
     os.makedirs('/content/Retrieval-based-Voice-Conversion-WebUI/stats/', exist_ok=True)
@@ -205,5 +201,3 @@ def clone_repository():
         hubert_filepath = os.path.join(base_path, "hubert_base.pt")
         position += 1  # Increment position for hubert_base.pt
         download_file(hubert_url, hubert_filepath, position)
-
-    download_pretrained_models()
