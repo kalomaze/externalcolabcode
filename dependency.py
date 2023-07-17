@@ -5,8 +5,6 @@ import tarfile
 import subprocess
 from pathlib import Path
 from datetime import datetime
-import concurrent.futures
-import multiprocessing
 
 def setup_environment(ForceUpdateDependencies, ForceTemporaryStorage):
     # Mounting Google Drive
@@ -76,10 +74,6 @@ def setup_environment(ForceUpdateDependencies, ForceTemporaryStorage):
 
         return list(added_files) + list(changed_files)
 
-    # Function for extracting a member from the tar file
-    def extract_member(tar, member, path):
-        tar.extract(member, path)
-
     # Check if CachedRVC.tar.gz exists
     if ForceTemporaryStorage:
         file_path = '/content/CachedRVC.tar.gz'
@@ -121,20 +115,14 @@ def setup_environment(ForceUpdateDependencies, ForceTemporaryStorage):
         print('Beginning backup copy operation...')
 
         with tarfile.open(content_file_path, 'r:gz') as tar:
-            # Get the number of available processors
-            num_cpus = multiprocessing.cpu_count()
-
-            # Use a ProcessPoolExecutor to manage a pool of workers
-            with concurrent.futures.ProcessPoolExecutor(max_workers=num_cpus) as executor:
-                futures = [executor.submit(extract_member, tar, member, extract_path) for member in tar.getmembers()]
-                for future in concurrent.futures.as_completed(futures):
-                    try:
-                        future.result()  # get the result (or raise exception if something went wrong)
-                    except Exception as e:
-                        print('Failed to extract a file (this isn\'t normal)... forcing an update to compensate')
-                        ForceUpdateDependencies = True
-
-        print(f'Extraction of {content_file_path} to {extract_path} completed.')
+            for member in tar.getmembers():
+                target_path = os.path.join(extract_path, member.name)
+                try:
+                    tar.extract(member, extract_path)
+                except Exception as e:
+                    print('Failed to extract a file (this isn\'t normal)... forcing an update to compensate')
+                    ForceUpdateDependencies = True
+            print(f'Extraction of {content_file_path} to {extract_path} completed.')
 
         if ForceUpdateDependencies:
             install_packages()
