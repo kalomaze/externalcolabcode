@@ -156,6 +156,7 @@ async def run_script():
     os.makedirs('uvr5_weights', exist_ok=True)
 
 async def download_pretrained_models():
+    print("\nPreparing to download pretrained models.\n")
     pretrained_models = {
         "pretrained": [
             "D40k.pth",
@@ -207,8 +208,5 @@ async def download_pretrained_models():
         position += 1  # Increment position for hubert_base.pt
         await download_file(hubert_url, hubert_filepath, position)
 
-async def main():
-    await asyncio.gather(download_pretrained_models(), run_script())
-
 async def clone_repository():
-    await main()
+    await asyncio.gather(download_pretrained_models(), run_script())
