@@ -4,10 +4,9 @@ import shutil
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm.notebook import tqdm
 from pathlib import Path
-import asyncio
-import aiohttp
+import requests
 
-async def run_script():
+def run_script():
     def run_cmd(cmd):
         process = subprocess.run(cmd, shell=True, check=True, text=True)
         return process.stdout
@@ -157,8 +156,7 @@ async def run_script():
     os.makedirs('pretrained', exist_ok=True)
     os.makedirs('uvr5_weights', exist_ok=True)
 
-async def download_pretrained_models():
-    print("\nPreparing to download pretrained models.\n")
+def download_pretrained_models():
     pretrained_models = {
         "pretrained": [
             "D40k.pth",
@@ -183,32 +181,24 @@ async def download_pretrained_models():
     base_url = "https://huggingface.co/lj1995/VoiceConversionWebUI/resolve/main/"
     base_path = "/content/Retrieval-based-Voice-Conversion-WebUI/"
 
-    async def download_file(url, filepath, position):
-        with tqdm(total=1, desc=f"Downloading {os.path.basename(filepath)}", position=position) as pbar:
+    for folder, models in pretrained_models.items():
+        folder_path = os.path.join(base_path, folder)
+        os.makedirs(folder_path, exist_ok=True)
+        for model in models:
+            url = base_url + folder + "/" + model
+            filepath = os.path.join(folder_path, model)
             subprocess.run(
                 ["aria2c", "--console-log-level=error", "-c", "-x", "16", "-s", "16", "-k", "1M", url, "-d",
-                    os.path.dirname(filepath), "-o", os.path.basename(filepath)], check=True)
-            pbar.update(1)
+                 os.path.dirname(filepath), "-o", os.path.basename(filepath)], check=True)
 
-    with ThreadPoolExecutor() as executor:
-        position = 0
-        for folder, models in pretrained_models.items():
-            folder_path = os.path.join(base_path, folder)
-            os.makedirs(folder_path, exist_ok=True)
-            download_tasks = []
-            for model in models:
-                url = base_url + folder + "/" + model
-                filepath = os.path.join(folder_path, model)
-                download_tasks.append(asyncio.create_task(download_file(url, filepath, position)))
-                position += 1
-            for task in download_tasks:
-                await task
+    # Download hubert_base.pt to the base path
+    hubert_url = base_url + "hubert_base.pt"
+    hubert_filepath = os.path.join(base_path, "hubert_base.pt")
+    subprocess.run(
+        ["aria2c", "--console-log-level=error", "-c", "-x", "16", "-s", "16", "-k", "1M", hubert_url, "-d",
+         os.path.dirname(hubert_filepath), "-o", os.path.basename(hubert_filepath)], check=True)
 
-        # Download hubert_base.pt to the base path
-        hubert_url = base_url + "hubert_base.pt"
-        hubert_filepath = os.path.join(base_path, "hubert_base.pt")
-        position += 1  # Increment position for hubert_base.pt
-        await download_file(hubert_url, hubert_filepath, position)
-
-async def clone_repository():
-    await asyncio.gather(download_pretrained_models(), run_script())
+def clone_repository():
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        executor.submit(run_script)
+        executor.submit(download_pretrained_models)
