@@ -204,7 +204,8 @@ def download_pretrained_models():
              os.path.dirname(hubert_filepath), "-o", os.path.basename(hubert_filepath)], check=True)
         pbar.update()
 
-def clone_repository():
+def clone_repository(run_download):
     with ThreadPoolExecutor(max_workers=2) as executor:
         executor.submit(run_script)
-        executor.submit(download_pretrained_models)
+        if run_download:
+            executor.submit(download_pretrained_models)
