@@ -148,7 +148,7 @@ async def run_script():
 
     # Download the torchcrepe folder from the maxrmorrison/torchcrepe repository
     run_cmd("git clone https://github.com/maxrmorrison/torchcrepe.git")
-    shutil.move('torchcrepe/torchcrepe', '/content/Retrieval-based-Voice-Conversion-WebUI/')
+    shutil.move('/content/torchcrepe/torchcrepe', '/content/Retrieval-based-Voice-Conversion-WebUI/')
     shutil.rmtree('/content/torchcrepe', ignore_errors=True)  # Delete the torchcrepe repository folder
 
     # Change the current directory to /content/Retrieval-based-Voice-Conversion-WebUI
