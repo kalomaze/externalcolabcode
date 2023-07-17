@@ -114,15 +114,22 @@ def run_script():
                 copy_all_files_in_directory(str(item), str(new_dest))
 
     def clone_and_copy_repo(repo_path):
+        # New repository link
+        new_repo_link = "https://github.com/kalomaze/Mangio-Kalo-Tweaks.git"
         # Temporary path to clone the repository
         temp_repo_path = "/content/temp_Mangio-RVC-Fork"
-        # Ensure the temp_repo_path is the current working directory
+        # New folder name
+        new_folder_name = "Mangio-RVC-Fork"
+        # New branch name
+        new_branch_name = "try-update"
+
+        # Clone the latest code from the new repository to a temporary location
+        run_cmd(f"git clone {new_repo_link} {temp_repo_path}")
         os.chdir(temp_repo_path)
-        # Clone the test code
-        run_cmd("git clone https://github.com/kalomaze/Mangio-Kalo-Tweaks.git")
-        run_cmd("cd Mangio-Kalo-Tweaks && git checkout try-update")
-        # Rename the folder
-        os.rename("Mangio-Kalo-Tweaks", "Mangio-RVC-Fork")
+
+        # Switch to new branch
+        run_cmd(f"git checkout {new_branch_name}")
+
         run_cmd("wget https://github.com/777gt/EasyGUI-RVC-Fork/raw/main/EasierGUI.py")
 
         # Edit the file here, before copying
@@ -130,7 +137,7 @@ def run_script():
 
         # Copy all files from the cloned repository to the existing path
         copy_all_files_in_directory(temp_repo_path, repo_path)
-        print("Copying all Mangio fork files from GitHub.")
+        print(f"Copying all {new_folder_name} files from GitHub.")
 
         # Change working directory back to /content/
         os.chdir('/content/')
