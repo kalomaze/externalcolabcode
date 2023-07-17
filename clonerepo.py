@@ -5,6 +5,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm.notebook import tqdm
 from pathlib import Path
 import asyncio
+import aiohttp
 
 async def run_script():
     def run_cmd(cmd):
@@ -182,39 +183,38 @@ async def download_pretrained_models():
     base_url = "https://huggingface.co/lj1995/VoiceConversionWebUI/resolve/main/"
     base_path = "/content/Retrieval-based-Voice-Conversion-WebUI/"
 
-    async def download_file(url, filepath, position):
-        with tqdm(total=1, desc=f"Downloading {os.path.basename(filepath)}", position=position) as pbar:
-            process = await asyncio.create_subprocess_exec(
-                "aria2c",
-                "--console-log-level=error",
-                "-c", "-x", "16", "-s", "16", "-k", "1M",
-                url, "-d", os.path.dirname(filepath), "-o", os.path.basename(filepath),
-                stdout=asyncio.subprocess.DEVNULL,
-                stderr=asyncio.subprocess.DEVNULL
-            )
-            await process.wait()
-            pbar.update(1)
+    async def download_file(session, url, filepath):
+        async with session.get(url) as response:
+            total_size = int(response.headers.get("Content-Length", 0))
+            chunk_size = 1024
+            progress = tqdm(total=total_size, unit="B", unit_scale=True, desc=f"Downloading {os.path.basename(filepath)}")
+            with open(filepath, "wb") as file:
+                while True:
+                    chunk = await response.content.read(chunk_size)
+                    if not chunk:
+                        break
+                    file.write(chunk)
+                    progress.update(len(chunk))
+            progress.close()
 
-    with ThreadPoolExecutor() as executor:
-        position = 0
-        for folder, models in pretrained_models.items():
-            folder_path = os.path.join(base_path, folder)
-            os.makedirs(folder_path, exist_ok=True)
-            download_tasks = []
-            for model in models:
+    async with aiohttp.ClientSession() as session:
+        tasks = []
+        sorted_models = sorted([(folder, model) for folder, models in pretrained_models.items() for model in models], key=lambda x: os.path.getsize(os.path.join(base_path, x[0], x[1])))
+        grouped_models = [sorted_models[i:i + 2] for i in range(0, len(sorted_models), 2)]
+        
+        for group in grouped_models:
+            for folder, model in group:
+                folder_path = os.path.join(base_path, folder)
+                os.makedirs(folder_path, exist_ok=True)
                 url = base_url + folder + "/" + model
-                filepath = os.path.join(folder_path, model)       
-                download_tasks.append(asyncio.create_task(download_file(url, filepath, position)))
-                position += 1
-                print(f"Starting download for position {position}....")
-            for task in download_tasks:
-                await task
+                filepath = os.path.join(folder_path, model)
+                tasks.append(download_file(session, url, filepath))
 
-        # Download hubert_base.pt to the base path
         hubert_url = base_url + "hubert_base.pt"
         hubert_filepath = os.path.join(base_path, "hubert_base.pt")
-        position += 1  # Increment position for hubert_base.pt
-        await download_file(hubert_url, hubert_filepath, position)
+        tasks.append(download_file(session, hubert_url, hubert_filepath))
+
+        await asyncio.gather(*tasks)
 
 async def clone_repository():
     await asyncio.gather(download_pretrained_models(), run_script())
