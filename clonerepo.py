@@ -13,6 +13,7 @@ async def run_script():
 
     # Change the current directory to /content/
     os.chdir('/content/')
+    print("Changing dir to /content/")
 
     # Your function to edit the file
     def edit_file(file_path):
@@ -125,9 +126,11 @@ async def run_script():
 
         # Copy all files from the cloned repository to the existing path
         copy_all_files_in_directory(temp_repo_path, repo_path)
+        print("Copying all Mangio fork files from GitHub.")
 
         # Change working directory back to /content/
         os.chdir('/content/')
+        print("Changed path back to /content/")
         
         # Remove the temporary cloned repository
         shutil.rmtree(temp_repo_path)
