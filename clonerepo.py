@@ -142,13 +142,14 @@ async def run_script():
     os.makedirs('/content/Retrieval-based-Voice-Conversion-WebUI/stats/', exist_ok=True)
     run_cmd("wget -q https://cdn.discordapp.com/attachments/945486970883285045/1114717554481569802/peppy-generator-388800-07722f17a188.json -O /content/Retrieval-based-Voice-Conversion-WebUI/stats/peppy-generator-388800-07722f17a188.json")
 
-    # Forcefully delete any existing torchcrepe dependency from an earlier run
-    shutil.rmtree('/Retrieval-based-Voice-Conversion-WebUI/torchcrepe', ignore_errors=True)
+    # Forcefully delete any existing torchcrepe dependencies downloaded from an earlier run just in case
+    shutil.rmtree('/content/Retrieval-based-Voice-Conversion-WebUI/torchcrepe', ignore_errors=True)
+    shutil.rmtree('/content/torchcrepe', ignore_errors=True)
 
     # Download the torchcrepe folder from the maxrmorrison/torchcrepe repository
     run_cmd("git clone https://github.com/maxrmorrison/torchcrepe.git")
-    shutil.move('torchcrepe/torchcrepe', 'Retrieval-based-Voice-Conversion-WebUI/')
-    shutil.rmtree('torchcrepe', ignore_errors=True)  # Delete the torchcrepe repository folder
+    shutil.move('torchcrepe/torchcrepe', '/content/Retrieval-based-Voice-Conversion-WebUI/')
+    shutil.rmtree('/content/torchcrepe', ignore_errors=True)  # Delete the torchcrepe repository folder
 
     # Change the current directory to /content/Retrieval-based-Voice-Conversion-WebUI
     os.chdir('/content/Retrieval-based-Voice-Conversion-WebUI')
@@ -183,9 +184,15 @@ async def download_pretrained_models():
 
     async def download_file(url, filepath, position):
         with tqdm(total=1, desc=f"Downloading {os.path.basename(filepath)}", position=position) as pbar:
-            subprocess.run(
-                ["aria2c", "--console-log-level=error", "-c", "-x", "16", "-s", "16", "-k", "1M", url, "-d",
-                    os.path.dirname(filepath), "-o", os.path.basename(filepath)], check=True)
+            process = await asyncio.create_subprocess_exec(
+                "aria2c",
+                "--console-log-level=error",
+                "-c", "-x", "16", "-s", "16", "-k", "1M",
+                url, "-d", os.path.dirname(filepath), "-o", os.path.basename(filepath),
+                stdout=asyncio.subprocess.DEVNULL,
+                stderr=asyncio.subprocess.DEVNULL
+            )
+            await process.wait()
             pbar.update(1)
 
     with ThreadPoolExecutor() as executor:
@@ -196,9 +203,10 @@ async def download_pretrained_models():
             download_tasks = []
             for model in models:
                 url = base_url + folder + "/" + model
-                filepath = os.path.join(folder_path, model)
+                filepath = os.path.join(folder_path, model)       
                 download_tasks.append(asyncio.create_task(download_file(url, filepath, position)))
                 position += 1
+                print(f"Starting download for position {position}....")
             for task in download_tasks:
                 await task
 
