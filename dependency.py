@@ -2,9 +2,11 @@ import os
 import csv
 import shutil
 import tarfile
+import gzip
 import subprocess
 from pathlib import Path
 from datetime import datetime
+import concurrent.futures
 
 def setup_environment(ForceUpdateDependencies, ForceTemporaryStorage):
     # Mounting Google Drive
@@ -100,6 +102,14 @@ def setup_environment(ForceUpdateDependencies, ForceTemporaryStorage):
                 os.remove(file_path)
             print('Failed download file deleted. Continuing manual backup..')
 
+    def safe_extract(tar, member, path):
+        try:
+            tar.extract(member, path)
+        except Exception as e:
+            print(f'Failed to extract file {member.name} due to {str(e)}... forcing an update to compensate')
+            return False
+        return True
+
     if Path(file_path).exists():
         if ForceTemporaryStorage:
             print('Finished downloading CachedRVC.tar.gz.')
@@ -114,14 +124,12 @@ def setup_environment(ForceUpdateDependencies, ForceTemporaryStorage):
 
         print('Beginning backup copy operation...')
 
-        with tarfile.open(content_file_path, 'r:gz') as tar:
-            for member in tar.getmembers():
-                target_path = os.path.join(extract_path, member.name)
-                try:
-                    tar.extract(member, extract_path)
-                except Exception as e:
-                    print('Failed to extract a file (this isn\'t normal)... forcing an update to compensate')
-                    ForceUpdateDependencies = True
+        with gzip.open(content_file_path, 'rb') as f_in:
+            with tarfile.open(fileobj=f_in, mode='r|') as tar:
+                for member in tar:
+                    if member.isreg():  # only extract files, ignore directories
+                        if not safe_extract(tar, member, extract_path):
+                            ForceUpdateDependencies = True
             print(f'Extraction of {content_file_path} to {extract_path} completed.')
 
         if ForceUpdateDependencies:
