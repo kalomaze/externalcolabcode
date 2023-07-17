@@ -116,12 +116,13 @@ def run_script():
     def clone_and_copy_repo(repo_path):
         # Temporary path to clone the repository
         temp_repo_path = "/content/temp_Mangio-RVC-Fork"
+        # Ensure the temp_repo_path is the current working directory
+        os.chdir(temp_repo_path)
         # Clone the test code
         run_cmd("git clone https://github.com/kalomaze/Mangio-Kalo-Tweaks.git")
-        run_cmd(f"cd Mangio-Kalo-Tweaks && git checkout try-update")
-        os.chdir(temp_repo_path)
+        run_cmd("cd Mangio-Kalo-Tweaks && git checkout try-update")
         # Rename the folder
-        os.rename("/content/Mangio-Kalo-Tweaks", "/content/Mangio-RVC-Fork")
+        os.rename("Mangio-Kalo-Tweaks", "Mangio-RVC-Fork")
         run_cmd("wget https://github.com/777gt/EasyGUI-RVC-Fork/raw/main/EasierGUI.py")
 
         # Edit the file here, before copying
