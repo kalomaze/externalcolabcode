@@ -181,22 +181,28 @@ def download_pretrained_models():
     base_url = "https://huggingface.co/lj1995/VoiceConversionWebUI/resolve/main/"
     base_path = "/content/Retrieval-based-Voice-Conversion-WebUI/"
 
-    for folder, models in pretrained_models.items():
-        folder_path = os.path.join(base_path, folder)
-        os.makedirs(folder_path, exist_ok=True)
-        for model in models:
-            url = base_url + folder + "/" + model
-            filepath = os.path.join(folder_path, model)
-            subprocess.run(
-                ["aria2c", "--console-log-level=error", "-c", "-x", "16", "-s", "16", "-k", "1M", url, "-d",
-                 os.path.dirname(filepath), "-o", os.path.basename(filepath)], check=True)
+    # Calculate total number of files to download
+    total_files = sum(len(files) for files in pretrained_models.values()) + 1  # +1 for hubert_base.pt
 
-    # Download hubert_base.pt to the base path
-    hubert_url = base_url + "hubert_base.pt"
-    hubert_filepath = os.path.join(base_path, "hubert_base.pt")
-    subprocess.run(
-        ["aria2c", "--console-log-level=error", "-c", "-x", "16", "-s", "16", "-k", "1M", hubert_url, "-d",
-         os.path.dirname(hubert_filepath), "-o", os.path.basename(hubert_filepath)], check=True)
+    with tqdm(total=total_files, desc="Downloading files") as pbar:
+        for folder, models in pretrained_models.items():
+            folder_path = os.path.join(base_path, folder)
+            os.makedirs(folder_path, exist_ok=True)
+            for model in models:
+                url = base_url + folder + "/" + model
+                filepath = os.path.join(folder_path, model)
+                subprocess.run(
+                    ["aria2c", "--console-log-level=error", "-c", "-x", "16", "-s", "16", "-k", "1M", url, "-d",
+                     os.path.dirname(filepath), "-o", os.path.basename(filepath)], check=True)
+                pbar.update()
+
+        # Download hubert_base.pt to the base path
+        hubert_url = base_url + "hubert_base.pt"
+        hubert_filepath = os.path.join(base_path, "hubert_base.pt")
+        subprocess.run(
+            ["aria2c", "--console-log-level=error", "-c", "-x", "16", "-s", "16", "-k", "1M", hubert_url, "-d",
+             os.path.dirname(hubert_filepath), "-o", os.path.basename(hubert_filepath)], check=True)
+        pbar.update()
 
 def clone_repository():
     with ThreadPoolExecutor(max_workers=2) as executor:
