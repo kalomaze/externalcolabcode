@@ -89,7 +89,7 @@ def setup_environment(ForceUpdateDependencies, ForceTemporaryStorage):
         print('No cached dependency install found. Attempting to download GitHub backup..')
 
         try:
-            download_url = "https://huggingface.co/kalomaze/ColabDependencies/resolve/main/CachedRVC.tar.gz"
+            download_url = "https://github.com/kalomaze/QuickMangioFixes/releases/download/release3/CachedRVC.tar.gz"
             subprocess.run(["wget", "-O", file_path, download_url])
             print('Download completed successfully!')
         except Exception as e:
