@@ -205,7 +205,7 @@ async def download_pretrained_models():
         await download_file(hubert_url, hubert_filepath, position)
 
 async def main():
-        await asyncio.gather(download_pretrained_models(), run_script())
+    await asyncio.gather(download_pretrained_models(), run_script())
 
 async def clone_repository():
-    asyncio.run(main())
+    await main()
