@@ -21,7 +21,8 @@ def setup_environment(ForceUpdateDependencies, ForceTemporaryStorage):
         packages = ['build-essential', 'python3-dev', 'ffmpeg', 'aria2']
         pip_packages = ['pip', 'setuptools', 'wheel', 'httpx==0.23.0', 'faiss-gpu', 'fairseq', 'gradio==3.34.0',
                         'ffmpeg', 'ffmpeg-python', 'praat-parselmouth', 'pyworld', 'numpy==1.23.5',
-                        'numba==0.56.4', 'librosa==0.9.2', 'mega.py', 'gdown', 'onnxruntime', 'pyngrok==4.1.12']
+                        'numba==0.56.4', 'librosa==0.9.2', 'mega.py', 'gdown', 'onnxruntime', 'pyngrok==4.1.12',
+                        'gTTS', 'elevenlabs']
 
         print("Updating and installing system packages...")
         for package in packages:
