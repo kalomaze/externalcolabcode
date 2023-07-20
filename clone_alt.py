@@ -211,9 +211,6 @@ def download_pretrained_models():
         download_file(hubert_url, hubert_filepath)
         pbar.update()
 
-
 def clone_repository(run_download):
-    with ThreadPoolExecutor(max_workers=2) as executor:
-        executor.submit(run_script)
-        if run_download:
-            executor.submit(download_pretrained_models)
+    run_script()
+    download_pretrained_models()
