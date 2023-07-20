@@ -167,6 +167,15 @@ def run_script():
     os.makedirs('pretrained', exist_ok=True)
     os.makedirs('uvr5_weights', exist_ok=True)
 
+def download_file(url, filepath):
+    response = requests.get(url, stream=True)
+    response.raise_for_status()
+
+    with open(filepath, "wb") as file:
+        for chunk in response.iter_content(chunk_size=8192):
+            if chunk:
+                file.write(chunk)
+
 def download_pretrained_models():
     pretrained_models = {
         "pretrained": [
@@ -212,5 +221,7 @@ def download_pretrained_models():
         pbar.update()
 
 def clone_repository(run_download):
-    run_script()
-    download_pretrained_models()
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        executor.submit(run_script)
+        if run_download:
+            executor.submit(download_pretrained_models)
