@@ -24,7 +24,7 @@ def download_and_import_model(url):
             'https://www.googleapis.com/auth/drive.file',
             'https://www.googleapis.com/auth/drive']
 
-    config_path = f'/content/Retrieval-based-Voice-Conversion-{reeee}UI/stats/peppy-generator-388800-07722f17a188.json'
+    config_path = f'/content/Retrieval-based-Voice-Conversion-WebUI/stats/peppy-generator-388800-07722f17a188.json'
 
     if os.path.exists(config_path):
         # File exists, proceed with creation of creds and client
@@ -109,9 +109,9 @@ def download_and_import_model(url):
         MODEL = ""  # Initialize MODEL variable
 
         # Create directories if they don't exist
-        os.makedirs(f'/content/Retrieval-based-Voice-Conversion-{reeee}UI/logs/{MODEL}', exist_ok=True)
+        os.makedirs(f'/content/Retrieval-based-Voice-Conversion-WebUI/logs/{MODEL}', exist_ok=True)
         os.makedirs('/content/zips/', exist_ok=True)
-        os.makedirs('/content/Retrieval-based-Voice-Conversion-{reeee}UI/weights/', exist_ok=True)
+        os.makedirs('/content/Retrieval-based-Voice-Conversion-WebUI/weights/', exist_ok=True)
 
         if "drive.google.com" in url:
             subprocess.run(['gdown', url, '--fuzzy', '-O', model_zip_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -210,7 +210,7 @@ def download_and_import_model(url):
                 if file.endswith(".index"):
                     print("Found index file:", file)
                     condition1 = True
-                    logs_folder = os.path.join(f"/content/Retrieval-based-Voice-Conversion-{reeee}UI/logs", MODEL)
+                    logs_folder = os.path.join(f"/content/Retrieval-based-Voice-Conversion-WebUI/logs", MODEL)
                     os.makedirs(logs_folder, exist_ok=True)  # Create the logs folder if it doesn't exist
 
                     # Delete identical .index file if it exists
@@ -223,7 +223,7 @@ def download_and_import_model(url):
                     index_path = os.path.join(logs_folder, file)  # Set index_path variable
 
                 elif "G_" not in file and "D_" not in file and file.endswith(".pth"):
-                    destination_path = f'/content/Retrieval-based-Voice-Conversion-{reeee}UI/weights/{MODEL}.pth'
+                    destination_path = f'/content/Retrieval-based-Voice-Conversion-WebUI/weights/{MODEL}.pth'
                     if os.path.exists(destination_path):
                         print("You already downloaded this model. Re-importing anyways..")
                         already_downloaded = True
@@ -235,7 +235,7 @@ def download_and_import_model(url):
                         index_version = find_version_number(index_path)  # Get the index version
 
     if condition1 is False:
-        logs_folder = os.path.join(f"/content/Retrieval-based-Voice-Conversion-{reeee}UI/logs", MODEL)
+        logs_folder = os.path.join(f"/content/Retrieval-based-Voice-Conversion-WebUI/logs", MODEL)
         os.makedirs(logs_folder, exist_ok=True)
     # this is here so it doesnt crash if the model is missing an index for some reason
 
