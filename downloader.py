@@ -269,3 +269,6 @@ def download_and_import_model(url, private_model):
     # Reset model_zip_path and zip_file
     model_zip_path = None
     zip_file = None
+    file_size = None
+    md5_hash = None
+    index_version = None
