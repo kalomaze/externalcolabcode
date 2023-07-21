@@ -115,11 +115,11 @@ def download_and_import_model(url, private_model):
         os.makedirs('/content/Retrieval-based-Voice-Conversion-WebUI/weights/', exist_ok=True)
 
         if "drive.google.com" in url:
-            subprocess.run(['gdown', url, '--fuzzy', '-O', model_zip_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.run(['gdown', url, '--fuzzy', '-O', model_zip_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         elif "/blob/" in url:
             url = url.replace("blob", "resolve")
             print("Resolved URL:", url)  # Print the resolved URL
-            subprocess.run(['wget', url, '-O', model_zip_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.run(['wget', url, '-O', model_zip_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         elif "mega.nz" in url:
             m = Mega()
             print("Starting download from MEGA....")
@@ -141,7 +141,8 @@ def download_and_import_model(url, private_model):
                 if "huggingface.co" not in url:
                     url = "https://huggingface.co" + url
 
-                subprocess.run(['wget', url, '-O', model_zip_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                subprocess.run(['wget', url, '-O', model_zip_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
             else:
                 print("No .zip file found on the page.")
                 # Handle the case when no .zip file is found
