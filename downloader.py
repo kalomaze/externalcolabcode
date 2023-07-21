@@ -186,7 +186,6 @@ def download_and_import_model(url, private_model):
         print("Error: Could not find a valid .pth file within the extracted zip.")
         print("If there's an error above this talking about 'Access denied', try one of the Alt URLs in the Google Sheets for this model.")
         MODEL = ""
-        global condition3
         condition3 = True
 
     index_path = ""
