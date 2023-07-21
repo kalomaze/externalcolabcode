@@ -12,7 +12,7 @@ import requests
 import hashlib
 import subprocess
 
-def download_and_import_model(url):
+def download_and_import_model(url, private_model):
     def calculate_md5(file_path):
         hash_md5 = hashlib.md5()
         with open(file_path, "rb") as f:
