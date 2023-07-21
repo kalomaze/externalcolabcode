@@ -18,6 +18,7 @@ def download_and_import_model(url, private_model):
     condition2 = False
     condition3 = False
     MODEL = ""  # Initialize MODEL variable
+    already_downloaded = False
     index_path = ""
 
     def calculate_md5(file_path):
@@ -264,3 +265,7 @@ def download_and_import_model(url, private_model):
 
     subprocess.run(['rm', '-r', '/content/unzips/'], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     subprocess.run(['rm', '-r', '/content/zips/'], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    # Reset model_zip_path and zip_file
+    model_zip_path = None
+    zip_file = None
