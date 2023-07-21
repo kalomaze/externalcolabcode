@@ -130,7 +130,7 @@ def run_script():
         # Switch to new branch
         run_cmd(f"git checkout {new_branch_name}")
 
-        run_cmd("wget https://github.com/777gt/EasyGUI-RVC-Fork/raw/main/EasierGUI.py")
+        run_cmd("wget https://github.com/kalomaze/Mangio-Kalo-Tweaks/raw/patch-1/EasierGUI.py")
 
         # Edit the file here, before copying
         edit_file(f"{temp_repo_path}/infer-web.py")
