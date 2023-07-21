@@ -10,6 +10,7 @@ from tqdm import tqdm
 from bs4 import BeautifulSoup
 import requests
 import hashlib
+import subprocess
 
 def download_and_import_model(url):
     def calculate_md5(file_path):
