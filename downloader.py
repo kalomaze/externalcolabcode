@@ -13,11 +13,11 @@ import hashlib
 import subprocess
 
 def download_and_import_model(url, private_model):
-    MODEL = ""
+    global condition1, condition2, condition3, MODEL
     condition1 = False
     condition2 = False
     condition3 = False
-    already_downloaded = False
+    MODEL = ""  # Initialize MODEL variable
     index_path = ""
 
     def calculate_md5(file_path):
