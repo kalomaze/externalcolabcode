@@ -18,6 +18,7 @@ def download_and_import_model(url, private_model):
     condition2 = False
     condition3 = False
     already_downloaded = False
+    index_path = ""
 
     def calculate_md5(file_path):
         hash_md5 = hashlib.md5()
