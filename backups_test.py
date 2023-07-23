@@ -3,7 +3,6 @@ import os
 import shutil
 import hashlib
 import time
-import concurrent.futures
 
 LOGS_FOLDER = '/content/Retrieval-based-Voice-Conversion-WebUI/logs'
 WEIGHTS_FOLDER = '/content/Retrieval-based-Voice-Conversion-WebUI/weights'
@@ -11,60 +10,44 @@ GOOGLE_DRIVE_PATH = '/content/drive/MyDrive/RVC_Backup'
 
 def import_google_drive_backup():
     print("Importing Google Drive backup...")
-    GOOGLE_DRIVE_PATH = '/content/drive/MyDrive/RVC_Backup'  # change this to your Google Drive path
+    GOOGLE_DRIVE_PATH = '/content/drive/MyDrive/RVC_Backup'
     LOGS_FOLDER = '/content/Retrieval-based-Voice-Conversion-WebUI/logs'
     WEIGHTS_FOLDER = '/content/Retrieval-based-Voice-Conversion-WebUI/weights'
     weights_exist = False
     files_to_copy = []
     weights_to_copy = []
 
-    existing_dirs = set()
-
     for root, dirs, files in os.walk(GOOGLE_DRIVE_PATH):
         for filename in files:
             filepath = os.path.join(root, filename)
-            if os.path.isfile(filepath) and not filepath.startswith(os.path.join(GOOGLE_DRIVE_PATH, 'weights')):
+            if not filepath.startswith(os.path.join(GOOGLE_DRIVE_PATH, 'weights')):
                 backup_filepath = os.path.join(LOGS_FOLDER, os.path.relpath(filepath, GOOGLE_DRIVE_PATH))
                 backup_folderpath = os.path.dirname(backup_filepath)
-                if backup_folderpath not in existing_dirs and not os.path.exists(backup_folderpath):
-                    os.makedirs(backup_folderpath)
-                    existing_dirs.add(backup_folderpath)
-                    print(f'Created backup folder: {backup_folderpath}', flush=True)
-                files_to_copy.append((filepath, backup_filepath))  # add to list of files to copy
+                os.makedirs(backup_folderpath, exist_ok=True)
+                files_to_copy.append((filepath, backup_filepath))
             elif filepath.startswith(os.path.join(GOOGLE_DRIVE_PATH, 'weights')) and filename.endswith('.pth'):
                 weights_exist = True
                 weights_filepath = os.path.join(WEIGHTS_FOLDER, os.path.relpath(filepath, os.path.join(GOOGLE_DRIVE_PATH, 'weights')))
                 weights_folderpath = os.path.dirname(weights_filepath)
-                if weights_folderpath not in existing_dirs and not os.path.exists(weights_folderpath):
-                    os.makedirs(weights_folderpath)
-                    existing_dirs.add(weights_folderpath)
-                    print(f'Created weights folder: {weights_folderpath}', flush=True)
-                weights_to_copy.append((filepath, weights_filepath))  # add to list of weights to copy
+                os.makedirs(weights_folderpath, exist_ok=True)
+                weights_to_copy.append((filepath, weights_filepath))
 
-    # parallel copying files and weights
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        # copy other files
-        for source, target in files_to_copy:
-            executor.submit(shutil.copy2, source, target)
-
-        # copy weights files
-        for source, target in weights_to_copy:
-            executor.submit(shutil.copy2, source, target)
-    # Copy files in batches
+    print("Starting file copying...")
     total_files = len(files_to_copy)
     for i, (source, dest) in enumerate(files_to_copy, start=1):
-        shutil.copy2(source, dest)
-        # using '\r' to return to the start of the line and 'end=""' to prevent newline
-        print(f'\rCopying file {i} of {total_files} ({i * 100 / total_files:.2f}%)', end="")
-
+        with open(source, 'rb') as fsrc, open(dest, 'wb') as fdst:
+            shutil.copyfileobj(fsrc, fdst)
+        if i % 100 == 0:  # update progress for every 100 files
+            print(f'\rCopying file {i} of {total_files} ({i * 100 / total_files:.2f}%)', end="")
     print(f'\nImported {len(files_to_copy)} files from Google Drive backup')
 
-    # Copy weights in batches
+    print("Starting weights copying...")
     total_weights = len(weights_to_copy)
     for i, (source, dest) in enumerate(weights_to_copy, start=1):
-        shutil.copy2(source, dest)
-        # using '\r' to return to the start of the line and 'end=""' to prevent newline
-        print(f'\rCopying weight file {i} of {total_weights} ({i * 100 / total_weights:.2f}%)', end="")
+        with open(source, 'rb') as fsrc, open(dest, 'wb') as fdst:
+            shutil.copyfileobj(fsrc, fdst)
+        if i % 100 == 0:  # update progress for every 100 weights
+            print(f'\rCopying weight file {i} of {total_weights} ({i * 100 / total_weights:.2f}%)', end="")
     
     if weights_exist:
         print(f'\nImported {len(weights_to_copy)} weight files')
