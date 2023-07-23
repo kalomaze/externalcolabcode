@@ -10,81 +10,64 @@ GOOGLE_DRIVE_PATH = '/content/drive/MyDrive/RVC_Backup'
 
 def import_google_drive_backup():
     print("Importing Google Drive backup...")
-    GOOGLE_DRIVE_PATH = '/content/drive/MyDrive/RVC_Backup'
+    GOOGLE_DRIVE_PATH = '/content/drive/MyDrive/RVC_Backup'  # change this to your Google Drive path
     LOGS_FOLDER = '/content/Retrieval-based-Voice-Conversion-WebUI/logs'
     WEIGHTS_FOLDER = '/content/Retrieval-based-Voice-Conversion-WebUI/weights'
     weights_exist = False
     files_to_copy = []
     weights_to_copy = []
-
-    BUFFER_SIZE = 1024 * 1024 * 100  # 100MB buffer size
-
-    for root, dirs, files in os.walk(GOOGLE_DRIVE_PATH):
+    
+    def handle_files(root, files, is_weight_files=False):
         for filename in files:
             filepath = os.path.join(root, filename)
-            if not filepath.startswith(os.path.join(GOOGLE_DRIVE_PATH, 'weights')):
-                backup_filepath = os.path.join(LOGS_FOLDER, os.path.relpath(filepath, GOOGLE_DRIVE_PATH))
-                backup_folderpath = os.path.dirname(backup_filepath)
-                os.makedirs(backup_folderpath, exist_ok=True)
-                files_to_copy.append((filepath, backup_filepath))
-            elif filepath.startswith(os.path.join(GOOGLE_DRIVE_PATH, 'weights')) and filename.endswith('.pth'):
+            if filename.endswith('.pth') and is_weight_files:
                 weights_exist = True
-                weights_filepath = os.path.join(WEIGHTS_FOLDER, os.path.relpath(filepath, os.path.join(GOOGLE_DRIVE_PATH, 'weights')))
-                weights_folderpath = os.path.dirname(weights_filepath)
-                os.makedirs(weights_folderpath, exist_ok=True)
-                weights_to_copy.append((filepath, weights_filepath))
+                backup_filepath = os.path.join(WEIGHTS_FOLDER, os.path.relpath(filepath, GOOGLE_DRIVE_PATH))
+            else:
+                backup_filepath = os.path.join(LOGS_FOLDER, os.path.relpath(filepath, GOOGLE_DRIVE_PATH))
+            backup_folderpath = os.path.dirname(backup_filepath)
+            if not os.path.exists(backup_folderpath):
+                os.makedirs(backup_folderpath)
+                print(f'Created folder: {backup_folderpath}', flush=True)
+            if is_weight_files:
+                weights_to_copy.append((filepath, backup_filepath))
+            else:
+                files_to_copy.append((filepath, backup_filepath))
 
-    print("Starting file copying...")
+    for root, dirs, files in os.walk(os.path.join(GOOGLE_DRIVE_PATH, 'logs')):
+        handle_files(root, files)
+    
+    for root, dirs, files in os.walk(os.path.join(GOOGLE_DRIVE_PATH, 'weights')):
+        handle_files(root, files, True)
+
+    # Copy files in batches
     total_files = len(files_to_copy)
+    start_time = time.time()
     for i, (source, dest) in enumerate(files_to_copy, start=1):
-        with open(source, 'rb') as fsrc, open(dest, 'wb') as fdst:
-            shutil.copyfileobj(fsrc, fdst, BUFFER_SIZE)
-        if i % 100 == 0:  # update progress for every 100 files
+        with open(source, 'rb') as src, open(dest, 'wb') as dst:
+            shutil.copyfileobj(src, dst, 1024*1024)  # 1MB buffer size
+        # Report progress every 5 seconds or after every 100 files, whichever is less frequent
+        if time.time() - start_time > 5 or i % 100 == 0:
             print(f'\rCopying file {i} of {total_files} ({i * 100 / total_files:.2f}%)', end="")
+            start_time = time.time()
     print(f'\nImported {len(files_to_copy)} files from Google Drive backup')
 
-    print("Starting weights copying...")
+    # Copy weights in batches
     total_weights = len(weights_to_copy)
+    start_time = time.time()
     for i, (source, dest) in enumerate(weights_to_copy, start=1):
-        with open(source, 'rb') as fsrc, open(dest, 'wb') as fdst:
-            shutil.copyfileobj(fsrc, fdst, BUFFER_SIZE)
-        if i % 100 == 0:  # update progress for every 100 weights
+        with open(source, 'rb') as src, open(dest, 'wb') as dst:
+            shutil.copyfileobj(src, dst, 1024*1024)  # 1MB buffer size
+        # Report progress every 5 seconds or after every 100 files, whichever is less frequent
+        if time.time() - start_time > 5 or i % 100 == 0:
             print(f'\rCopying weight file {i} of {total_weights} ({i * 100 / total_weights:.2f}%)', end="")
-    
+            start_time = time.time()
     if weights_exist:
         print(f'\nImported {len(weights_to_copy)} weight files')
         print("Copied weights from Google Drive backup to local weights folder.")
     else:
         print("\nNo weights found in Google Drive backup.")
-
     print("Google Drive backup import completed.")
-    
-def get_md5_hash(file_path):
-    hash_md5 = hashlib.md5()
-    with open(file_path, "rb") as f:
-        for chunk in iter(lambda: f.read(4096), b""):
-            hash_md5.update(chunk)
-    return hash_md5.hexdigest()
-
-def copy_weights_folder_to_drive():
-    destination_folder = os.path.join(GOOGLE_DRIVE_PATH, 'weights')
-    if not os.path.exists(destination_folder):
-        os.makedirs(destination_folder)
-
-    num_copied = 0
-    for filename in os.listdir(WEIGHTS_FOLDER):
-        if filename.endswith('.pth'):
-            source_file = os.path.join(WEIGHTS_FOLDER, filename)
-            destination_file = os.path.join(destination_folder, filename)
-            if not os.path.exists(destination_file):
-                shutil.copy2(source_file, destination_file)
-                num_copied += 1
-                print(f"Copied {filename} to Google Drive!")
-
-    if num_copied == 0:
-        print("No new finished models found for copying.")
-    else:
-        print(f"Finished copying {num_copied} files to Google Drive!")
 
 def backup_files():
     print("\n Starting backup loop...")
