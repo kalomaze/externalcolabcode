@@ -37,18 +37,26 @@ def import_google_drive_backup():
                 weights_to_copy.append((filepath, weights_filepath))  # add to list of weights to copy
 
     # Copy files in batches
-    for source, dest in files_to_copy:
+    total_files = len(files_to_copy)
+    for i, (source, dest) in enumerate(files_to_copy, start=1):
         shutil.copy2(source, dest)
-    print(f'Imported {len(files_to_copy)} files from Google Drive backup')
+        # using '\r' to return to the start of the line and 'end=""' to prevent newline
+        print(f'\rCopying file {i} of {total_files} ({i * 100 / total_files:.2f}%)', end="")
+
+    print(f'\nImported {len(files_to_copy)} files from Google Drive backup')
 
     # Copy weights in batches
-    for source, dest in weights_to_copy:
+    total_weights = len(weights_to_copy)
+    for i, (source, dest) in enumerate(weights_to_copy, start=1):
         shutil.copy2(source, dest)
+        # using '\r' to return to the start of the line and 'end=""' to prevent newline
+        print(f'\rCopying weight file {i} of {total_weights} ({i * 100 / total_weights:.2f}%)', end="")
+    
     if weights_exist:
-        print(f'Imported {len(weights_to_copy)} weight files')
+        print(f'\nImported {len(weights_to_copy)} weight files')
         print("Copied weights from Google Drive backup to local weights folder.")
     else:
-        print("No weights found in Google Drive backup.")
+        print("\nNo weights found in Google Drive backup.")
 
     print("Google Drive backup import completed.")
     
