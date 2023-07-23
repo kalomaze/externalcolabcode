@@ -120,15 +120,10 @@ def run_script():
         temp_repo_path = "/content/temp_Mangio-RVC-Fork"
         # New folder name
         new_folder_name = "Mangio-RVC-Fork"
-        # New branch name
-        new_branch_name = "try-update"
 
         # Clone the latest code from the new repository to a temporary location
         run_cmd(f"git clone {new_repo_link} {temp_repo_path}")
         os.chdir(temp_repo_path)
-
-        # Switch to new branch
-        run_cmd(f"git checkout {new_branch_name}")
 
         run_cmd("wget https://github.com/kalomaze/Mangio-Kalo-Tweaks/raw/patch-1/EasierGUI.py")
 
