@@ -17,6 +17,8 @@ def import_google_drive_backup():
     files_to_copy = []
     weights_to_copy = []
 
+    BUFFER_SIZE = 1024 * 1024 * 100  # 100MB buffer size
+
     for root, dirs, files in os.walk(GOOGLE_DRIVE_PATH):
         for filename in files:
             filepath = os.path.join(root, filename)
@@ -36,7 +38,7 @@ def import_google_drive_backup():
     total_files = len(files_to_copy)
     for i, (source, dest) in enumerate(files_to_copy, start=1):
         with open(source, 'rb') as fsrc, open(dest, 'wb') as fdst:
-            shutil.copyfileobj(fsrc, fdst)
+            shutil.copyfileobj(fsrc, fdst, BUFFER_SIZE)
         if i % 100 == 0:  # update progress for every 100 files
             print(f'\rCopying file {i} of {total_files} ({i * 100 / total_files:.2f}%)', end="")
     print(f'\nImported {len(files_to_copy)} files from Google Drive backup')
@@ -45,7 +47,7 @@ def import_google_drive_backup():
     total_weights = len(weights_to_copy)
     for i, (source, dest) in enumerate(weights_to_copy, start=1):
         with open(source, 'rb') as fsrc, open(dest, 'wb') as fdst:
-            shutil.copyfileobj(fsrc, fdst)
+            shutil.copyfileobj(fsrc, fdst, BUFFER_SIZE)
         if i % 100 == 0:  # update progress for every 100 weights
             print(f'\rCopying weight file {i} of {total_weights} ({i * 100 / total_weights:.2f}%)', end="")
     
