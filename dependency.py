@@ -6,6 +6,24 @@ import subprocess
 from pathlib import Path
 from datetime import datetime
 
+def install_packages_but_jank_af():
+    packages = ['build-essential', 'python3-dev', 'ffmpeg', 'aria2']
+    pip_packages = ['pip', 'setuptools', 'wheel', 'httpx==0.23.0', 'faiss-gpu', 'fairseq', 'gradio==3.34.0',
+                    'ffmpeg', 'ffmpeg-python', 'praat-parselmouth', 'pyworld', 'numpy==1.23.5',
+                    'numba==0.56.4', 'librosa==0.9.2', 'mega.py', 'gdown', 'onnxruntime', 'pyngrok==4.1.12',
+                    'gTTS', 'elevenlabs']
+
+    print("Updating and installing system packages...")
+    for package in packages:
+        print(f"Installing {package}...")
+        subprocess.check_call(['apt-get', 'install', '-qq', '-y', package])
+
+    print("Updating and installing pip packages...")
+    subprocess.check_call(['pip', 'install', '--upgrade'] + pip_packages)
+
+    print('Packages up to date.')
+
+
 def setup_environment(ForceUpdateDependencies, ForceTemporaryStorage):
     # Mounting Google Drive
     if not ForceTemporaryStorage:
