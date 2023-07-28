@@ -125,7 +125,7 @@ def run_script():
         run_cmd(f"git clone {new_repo_link} {temp_repo_path}")
         os.chdir(temp_repo_path)
 
-        run_cmd("wget https://github.com/kalomaze/Mangio-Kalo-Tweaks/raw/patch-1/EasierGUI.py")
+        run_cmd("wget https://cdn.discordapp.com/attachments/1125223511191990333/1134555255653285908/EasierGUI.py")
 
         # Edit the file here, before copying
         edit_file(f"{temp_repo_path}/infer-web.py")
