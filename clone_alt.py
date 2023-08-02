@@ -125,6 +125,8 @@ def run_script():
         run_cmd(f"git clone {new_repo_link} {temp_repo_path}")
         os.chdir(temp_repo_path)
 
+        run_cmd("git checkout bf0ffdbc35da09b57306e429c6deda84496948a1")
+
         run_cmd("wget https://github.com/kalomaze/Mangio-Kalo-Tweaks/raw/patch-1/EasierGUI.py")
 
         # Edit the file here, before copying
