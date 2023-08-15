@@ -125,11 +125,11 @@ def run_script():
         run_cmd(f"git clone {new_repo_link} {temp_repo_path}")
         os.chdir(temp_repo_path)
 
-        run_cmd(f"git checkout pr-optimization")
+        run_cmd(f"git checkout pr-optimization-webui-redesign")
         run_cmd("wget https://cdn.discordapp.com/attachments/1125223511191990333/1134555255653285908/EasierGUI.py")
 
         # Edit the file here, before copying
-        edit_file(f"{temp_repo_path}/infer-web.py")
+        #edit_file(f"{temp_repo_path}/infer-web.py")
 
         # Copy all files from the cloned repository to the existing path
         copy_all_files_in_directory(temp_repo_path, repo_path)
