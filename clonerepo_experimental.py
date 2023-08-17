@@ -125,8 +125,7 @@ def run_script():
         run_cmd(f"git clone {new_repo_link} {temp_repo_path}")
         os.chdir(temp_repo_path)
 
-        run_cmd(f"git checkout pr-optimization-webui-redesign")
-        run_cmd("wget https://cdn.discordapp.com/attachments/1125223511191990333/1134555255653285908/EasierGUI.py")
+        run_cmd(f"git checkout ui-redesign-2")
 
         # Edit the file here, before copying
         #edit_file(f"{temp_repo_path}/infer-web.py")
